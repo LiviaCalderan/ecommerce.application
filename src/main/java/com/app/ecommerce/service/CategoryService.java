@@ -1,7 +1,17 @@
 package com.app.ecommerce.service;
 
-import org.springframework.stereotype.Service;
+import com.app.ecommerce.model.Category;
 
-@Service
-public class CategoryService {
+import java.util.List;
+
+public interface CategoryService {
+    
+    List<Category> fetchCategories();
+
+    void createCategory();
+
+    Category deleteCategory(Long categoryId);
+
+
+    Category updateCategory(Long categoryId, Category updateCategory);
 }
