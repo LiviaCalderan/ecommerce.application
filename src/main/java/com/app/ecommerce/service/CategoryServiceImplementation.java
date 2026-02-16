@@ -20,9 +20,8 @@ public class CategoryServiceImplementation implements CategoryService{
     }
 
     @Override
-    public Category createCategory() {
-
-        return null;
+    public Category createCategory(Category category) {
+        return categoryRepository.save(category);
     }
 
     @Override
