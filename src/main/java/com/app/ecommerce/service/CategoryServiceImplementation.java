@@ -15,8 +15,9 @@ public class CategoryServiceImplementation implements CategoryService{
     }
 
     @Override
-    public void createCategory() {
+    public Category createCategory() {
 
+        return null;
     }
 
     @Override

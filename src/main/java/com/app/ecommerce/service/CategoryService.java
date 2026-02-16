@@ -8,7 +8,7 @@ public interface CategoryService {
     
     List<Category> fetchCategories();
 
-    void createCategory();
+    Category createCategory();
 
     Category deleteCategory(Long categoryId);
 
