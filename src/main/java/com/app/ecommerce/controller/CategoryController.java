@@ -16,7 +16,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CategoryController {
 
-    @Autowired
     public final CategoryService categoryService;
 
     @GetMapping("/public/categories")
@@ -30,10 +29,10 @@ public class CategoryController {
         return new ResponseEntity<>(createdCategory, HttpStatus.CREATED);
     }
 
-    @DeleteMapping("admin/categories/{categoryId}")
-    public ResponseEntity<Category> deleteCategory(@PathVariable Long categoryId){
+    @DeleteMapping("/admin/categories/{categoryId}")
+    public ResponseEntity<Void> deleteCategory(@PathVariable Long categoryId){
         Category deletedCategory = categoryService.deleteCategory(categoryId);
-        return new ResponseEntity<>(deletedCategory, HttpStatus.OK);
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/public/categories/{categoryId}")

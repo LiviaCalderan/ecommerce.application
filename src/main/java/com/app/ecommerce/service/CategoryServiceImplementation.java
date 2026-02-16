@@ -4,7 +4,9 @@ package com.app.ecommerce.service;
 import com.app.ecommerce.CategoryRepository;
 import com.app.ecommerce.model.Category;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -26,7 +28,10 @@ public class CategoryServiceImplementation implements CategoryService{
 
     @Override
     public Category deleteCategory(Long categoryId) {
-        return null;
+        Category categoryToDelete = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        categoryRepository.delete(categoryToDelete);
+        return categoryToDelete;
     }
 
     @Override
