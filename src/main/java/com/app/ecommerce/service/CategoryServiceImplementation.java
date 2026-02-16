@@ -36,6 +36,9 @@ public class CategoryServiceImplementation implements CategoryService{
 
     @Override
     public Category updateCategory(Long categoryId, Category updateCategory) {
-        return null;
+        Category existingCategory = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        existingCategory.setCategoryName(updateCategory.getCategoryName());
+        return categoryRepository.save(existingCategory);
     }
 }
