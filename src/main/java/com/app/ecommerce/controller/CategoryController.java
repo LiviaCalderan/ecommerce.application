@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class CategoryController {
 
-    public final CategoryService categoryService;
+    private final CategoryService categoryService;
 
     @GetMapping("/public/categories")
     public ResponseEntity<CategoryResponseDTO> getAllCategories(
