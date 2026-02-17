@@ -4,12 +4,15 @@ import com.app.ecommerce.exceptions.ResourceNotFoundException;
 import com.app.ecommerce.model.Category;
 import com.app.ecommerce.model.Product;
 import com.app.ecommerce.payload.ProductDTO;
+import com.app.ecommerce.payload.ProductResponseDTO;
 import com.app.ecommerce.repository.CategoryRepository;
 import com.app.ecommerce.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -32,5 +35,17 @@ public class ProductServiceImplementation implements ProductService {
         Product savedProduct = productRepository.save(product);
         return modelMapper.map(savedProduct, ProductDTO.class);
 
+    }
+
+    @Override
+    public ProductResponseDTO fetchAllProducts() {
+        List<Product> productsList = productRepository.findAll();
+        List<ProductDTO> productsDTO = productsList.stream()
+                .map(product -> modelMapper.map(product, ProductDTO.class))
+                .toList();
+
+        ProductResponseDTO productResponseDTO = new ProductResponseDTO();
+        productResponseDTO.setContent(productsDTO);
+        return productResponseDTO;
     }
 }
