@@ -9,8 +9,11 @@ import com.app.ecommerce.repository.CategoryRepository;
 import com.app.ecommerce.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -20,6 +23,10 @@ public class ProductServiceImplementation implements ProductService {
    private final ProductRepository productRepository;
    private final CategoryRepository categoryRepository;
    private final ModelMapper modelMapper;
+   private final FileService fileService;
+
+   @Value("${project.image}")
+   private String path;
 
     @Override
     public ProductDTO addProduct(Long categoryId, ProductDTO productDTO) {
@@ -105,4 +112,17 @@ public class ProductServiceImplementation implements ProductService {
         return modelMapper.map(productToDelete, ProductDTO.class);
 
     }
+
+    @Override
+    public ProductDTO updateProductImage(Long productId, MultipartFile image) throws IOException {
+
+        Product existingProductDB = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
+
+        String fileName = fileService.uploadImage(path, image);
+        existingProductDB.setImage(fileName);
+        Product updatedProduct = productRepository.save(existingProductDB);
+        return modelMapper.map(updatedProduct, ProductDTO.class);
+    }
+
 }
