@@ -3,6 +3,7 @@ package com.app.ecommerce.controller;
 import com.app.ecommerce.model.Product;
 import com.app.ecommerce.payload.ProductDTO;
 import com.app.ecommerce.payload.ProductResponseDTO;
+import com.app.ecommerce.repository.ProductRepository;
 import com.app.ecommerce.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 public class ProductController {
 
     private final ProductService productService;
+    private final ProductRepository productRepository;
 
     @PostMapping("/admin/categories/{categoryId}/product")
     public ResponseEntity<ProductDTO> addProduct(@RequestBody Product product, @PathVariable Long categoryId){
@@ -41,6 +43,13 @@ public class ProductController {
     public ResponseEntity<ProductResponseDTO> getProductsByKeyword(@PathVariable String keyword){
         ProductResponseDTO productsByKeyword = productService.searchByKeyword(keyword);
         return new ResponseEntity<>(productsByKeyword, HttpStatus.FOUND);
+    }
+
+    @PutMapping("/admin/products/{productId}")
+    public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long productId,
+                                              @RequestBody ProductDTO updateProductDTO){
+        ProductDTO updatedProductDTO = productService.updateProduct(productId, updateProductDTO);
+        return new ResponseEntity<>(updatedProductDTO, HttpStatus.OK);
     }
 
 
