@@ -9,7 +9,6 @@ import com.app.ecommerce.repository.CategoryRepository;
 import com.app.ecommerce.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,11 +22,12 @@ public class ProductServiceImplementation implements ProductService {
    private final ModelMapper modelMapper;
 
     @Override
-    public ProductDTO addProduct(Long categoryId, Product product) {
+    public ProductDTO addProduct(Long categoryId, ProductDTO productDTO) {
 
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Category", "categoryId", categoryId));
+        Product product = modelMapper.map(productDTO, Product.class);
         product.setImage("default.png");
         product.setCategory(category);
         double specialPrice = product.getPrice() - ((product.getDiscount() * 0.01) * product.getPrice());
@@ -83,13 +83,14 @@ public class ProductServiceImplementation implements ProductService {
         Product existingProductDB = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
 
-        existingProductDB.setProductName(updateProductDTO.getProductName());
-        existingProductDB.setDescription(updateProductDTO.getDescription());
-        existingProductDB.setQuantity(updateProductDTO.getQuantity());
-        existingProductDB.setPrice(updateProductDTO.getPrice());
-        existingProductDB.setDiscount(updateProductDTO.getDiscount());
+        Product product = modelMapper.map(updateProductDTO, Product.class);
+        existingProductDB.setProductName(product.getProductName());
+        existingProductDB.setDescription(product.getDescription());
+        existingProductDB.setQuantity(product.getQuantity());
+        existingProductDB.setPrice(product.getPrice());
+        existingProductDB.setDiscount(product.getDiscount());
 
-        double specialPrice = updateProductDTO.getPrice() - ((updateProductDTO.getDiscount() * 0.01) * updateProductDTO.getPrice());
+        double specialPrice = product.getPrice() - ((product.getDiscount() * 0.01) * product.getPrice());
         existingProductDB.setSpecialPrice(specialPrice);
 
         Product updatedProduct = productRepository.save(existingProductDB);
