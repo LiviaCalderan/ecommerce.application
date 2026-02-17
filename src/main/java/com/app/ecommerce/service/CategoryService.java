@@ -6,7 +6,7 @@ import com.app.ecommerce.payload.CategoryResponseDTO;
 
 public interface CategoryService {
     
-    CategoryResponseDTO fetchCategories();
+    CategoryResponseDTO fetchCategories(Integer pageNumber, Integer pageSize);
 
     CategoryDTO createCategory(CategoryDTO category);
 
