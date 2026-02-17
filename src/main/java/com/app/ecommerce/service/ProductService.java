@@ -10,4 +10,6 @@ public interface ProductService {
     ProductResponseDTO fetchAllProducts();
 
     ProductResponseDTO searchByCategory(Long categoryId);
+
+    ProductResponseDTO searchByKeyword(String keyword);
 }
