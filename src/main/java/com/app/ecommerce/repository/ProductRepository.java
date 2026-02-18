@@ -2,17 +2,17 @@ package com.app.ecommerce.repository;
 
 import com.app.ecommerce.model.Category;
 import com.app.ecommerce.model.Product;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    List<Product> findByCategory(Category category);
+    Page<Product> findByCategory(Category category, Pageable pageDetails);
 
-    List<Product> findByProductNameLikeIgnoreCase(String keyword);
+    Page<Product> findByProductNameLikeIgnoreCase(String keyword, Pageable pageable);
 
     boolean existsByProductNameAndCategoryCategoryId(String productName, Long categoryId);
 }

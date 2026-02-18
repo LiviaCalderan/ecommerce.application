@@ -11,6 +11,10 @@ import com.app.ecommerce.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -51,48 +55,33 @@ public class ProductServiceImplementation implements ProductService {
     }
 
     @Override
-    public ProductResponseDTO fetchAllProducts() {
-        List<Product> productsList = productRepository.findAll();
-        List<ProductDTO> productsDTO = productsList.stream()
-                .map(product -> modelMapper.map(product, ProductDTO.class))
-                .toList();
+    public ProductResponseDTO fetchAllProducts(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
 
-        if(productsList.isEmpty()){
-           throw new APIException("No Products Exist!!");
-        }
+        Page<Product> productPage = productRepository.findAll(buildPageable(pageNumber, pageSize, sortBy, sortOrder));
 
-        ProductResponseDTO productResponseDTO = new ProductResponseDTO();
-        productResponseDTO.setContent(productsDTO);
-        return productResponseDTO;
+        return buildProductResponseDTO(productPage);
     }
 
     @Override
-    public ProductResponseDTO searchByCategory(Long categoryId) {
+    public ProductResponseDTO searchByCategory(Long categoryId, Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
 
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Product", "categoryId", categoryId));
+                        new ResourceNotFoundException("Products", "categoryId", categoryId));
 
-        List<Product> productsList = productRepository.findByCategory(category);
-        List<ProductDTO> productsDTO = productsList.stream()
-                .map(product -> modelMapper.map(product, ProductDTO.class))
-                .toList();
+        Page<Product> productPage = productRepository.findByCategory(category,
+                buildPageable(pageNumber, pageSize, sortBy, sortOrder));
 
-        ProductResponseDTO productResponseDTO = new ProductResponseDTO();
-        productResponseDTO.setContent(productsDTO);
-        return productResponseDTO;
+        return buildProductResponseDTO(productPage);
     }
 
     @Override
-    public ProductResponseDTO searchByKeyword(String keyword) {
-        List<Product> productsList = productRepository.findByProductNameLikeIgnoreCase('%' + keyword + '%');
-        List<ProductDTO> productsDTO = productsList.stream()
-                .map(product -> modelMapper.map(product, ProductDTO.class))
-                .toList();
+    public ProductResponseDTO searchByKeyword(String keyword, Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
 
-        ProductResponseDTO productResponseDTO = new ProductResponseDTO();
-        productResponseDTO.setContent(productsDTO);
-        return productResponseDTO;
+        Page<Product> productPage = productRepository.findByProductNameLikeIgnoreCase('%' + keyword + '%',
+                buildPageable(pageNumber, pageSize, sortBy, sortOrder));
+
+        return buildProductResponseDTO(productPage);
     }
 
     @Override
@@ -133,6 +122,33 @@ public class ProductServiceImplementation implements ProductService {
         existingProductDB.setImage(fileName);
         Product updatedProduct = productRepository.save(existingProductDB);
         return modelMapper.map(updatedProduct, ProductDTO.class);
+    }
+
+    private ProductResponseDTO buildProductResponseDTO(Page<Product> productPage) {
+
+        if(productPage.getTotalElements() == 0){
+            throw new APIException("No Products Exist!!");
+        }
+
+        List<ProductDTO> productsDTO = productPage.getContent().stream()
+                .map(product -> modelMapper.map(product, ProductDTO.class))
+                .toList();
+
+        ProductResponseDTO response = new ProductResponseDTO();
+        response.setContent(productsDTO);
+        response.setPageNumber(productPage.getNumber());
+        response.setPageSize(productPage.getSize());
+        response.setTotalElements(productPage.getTotalElements());
+        response.setTotalPages(productPage.getTotalPages());
+        response.setLastPage(productPage.isLast());
+        return response;
+    }
+
+    private Pageable buildPageable(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+        Sort sort = sortOrder.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        return PageRequest.of(pageNumber, pageSize, sort);
     }
 
 }
