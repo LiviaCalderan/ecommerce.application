@@ -43,4 +43,8 @@ public class Product {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
+    @ManyToOne
+    @JoinColumn(name = "seller_id")
+    private User user;
+
 }
