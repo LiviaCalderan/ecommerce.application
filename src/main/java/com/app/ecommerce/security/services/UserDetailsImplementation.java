@@ -24,7 +24,7 @@ public class UserDetailsImplementation implements UserDetails {
     private static final long serialVersionUID = 1L;
 
     private UUID id;
-    private String username;
+    private String userName;
     private String email;
 
     @JsonIgnore
@@ -58,7 +58,7 @@ public class UserDetailsImplementation implements UserDetails {
 
     @Override
     public String getUsername() {
-        return username;
+        return userName;
     }
 
     @Override

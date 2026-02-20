@@ -12,8 +12,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserDetailsServiceImplementation implements UserDetailsService {
 
-    @Autowired
-    UserRepository userRepository;
+
+    private final UserRepository userRepository;
+
+    public UserDetailsServiceImplementation(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Override
     @Transactional
