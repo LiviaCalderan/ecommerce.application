@@ -12,6 +12,7 @@ import com.app.ecommerce.security.response.MessageResponse;
 import com.app.ecommerce.security.response.UserInfoResponse;
 import com.app.ecommerce.security.services.UserDetailsImplementation;
 import jakarta.validation.Valid;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -25,10 +26,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
@@ -131,4 +129,22 @@ public class AuthController {
         userRepository.save(user);
         return ResponseEntity.ok(new MessageResponse("User registered successfully!!"));
     }
+
+    @GetMapping("/user")
+    public ResponseEntity<?> getCurrentUserDetails(Authentication authentication) {
+        UserDetailsImplementation userDetails = (UserDetailsImplementation) authentication.getPrincipal();
+
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
+        UserInfoResponse response = new UserInfoResponse(
+                userDetails.getId(),
+                userDetails.getUsername(),
+                roles
+        );
+        return ResponseEntity.ok().body(response);
+
+    }
+
 }
