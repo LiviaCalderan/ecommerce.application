@@ -20,7 +20,6 @@ import java.io.IOException;
 public class ProductController {
 
     private final ProductService productService;
-    private final ProductRepository productRepository;
 
     @PostMapping("/admin/categories/{categoryId}/product")
     public ResponseEntity<ProductDTO> addProduct(@Valid @RequestBody ProductDTO productDto,

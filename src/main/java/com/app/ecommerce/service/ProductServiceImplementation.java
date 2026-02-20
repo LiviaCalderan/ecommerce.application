@@ -126,9 +126,9 @@ public class ProductServiceImplementation implements ProductService {
 
     private ProductResponseDTO buildProductResponseDTO(Page<Product> productPage) {
 
-        if(productPage.getTotalElements() == 0){
-            throw new APIException("No Products Exist!!");
-        }
+//        if(productPage.getTotalElements() == 0){
+//            throw new APIException("No Products Exist!!");
+//        }
 
         List<ProductDTO> productsDTO = productPage.getContent().stream()
                 .map(product -> modelMapper.map(product, ProductDTO.class))
