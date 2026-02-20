@@ -14,7 +14,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import java.security.Key;
 import java.util.Date;
 
 @Component
@@ -49,12 +48,12 @@ public class JwtUtils {
 
     public String getUserNameFromJWTToken(String token) {
         return Jwts.parser()
-                .verifyWith((SecretKey) key())
+                .verifyWith(key())
                 .build().parseSignedClaims(token)
                 .getPayload().getSubject();
     }
 
-    public Key key() {
+    public SecretKey key() {
         return Keys.hmacShaKeyFor(
                 Decoders.BASE64.decode(jwtSecret)
         );
@@ -64,7 +63,7 @@ public class JwtUtils {
         try{
             System.out.println("Validate");
             Jwts.parser()
-                    .verifyWith((SecretKey) key())
+                    .verifyWith(key())
                     .build()
                     .parseSignedClaims(authToken);
             return true;

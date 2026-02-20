@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
@@ -38,6 +39,12 @@ public class User {
     @Size(max = 120)
     private String password;
 
+    public User(String userName, String email, String password) {
+        this.userName = userName;
+        this.email = email;
+        this.password = password;
+    }
+
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE},
                 fetch = FetchType.EAGER)
     @JoinTable(name = "user_role",
@@ -55,6 +62,5 @@ public class User {
     @ToString.Exclude
     @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE},orphanRemoval = true)
     private Set<Product> products;
-
 
 }

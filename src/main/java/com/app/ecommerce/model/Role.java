@@ -21,4 +21,7 @@ public class Role {
     @Column(name = "role_name", length = 20)
     private AppRole roleName;
 
+    public Role(AppRole roleName) {
+        this.roleName = roleName;
+    }
 }
