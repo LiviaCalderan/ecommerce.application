@@ -130,6 +130,15 @@ public class AuthController {
         return ResponseEntity.ok(new MessageResponse("User registered successfully!!"));
     }
 
+    @PostMapping("/signout")
+    public ResponseEntity<?> signoutUser() {
+        ResponseCookie cookie = jwtUtils.getCleanJwtCookie();
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,
+                        cookie.toString())
+                .body(new MessageResponse("You have been signed out!"));
+
+    }
+
     @GetMapping("/user")
     public ResponseEntity<?> getCurrentUserDetails(Authentication authentication) {
         UserDetailsImplementation userDetails = (UserDetailsImplementation) authentication.getPrincipal();
