@@ -13,14 +13,13 @@ import java.util.UUID;
 public class UserInfoResponse  {
 
     private UUID id;
-    private String jwtToken;
     private String username;
     private List<String> roles;
 
-    public UserInfoResponse(UUID id, String username, List<String> roles, String jwtToken) {
+    public UserInfoResponse(UUID id, String username, List<String> roles ) {
         this.id = id;
-        this.jwtToken = jwtToken;
         this.username = username;
         this.roles = roles;
     }
+
 }
