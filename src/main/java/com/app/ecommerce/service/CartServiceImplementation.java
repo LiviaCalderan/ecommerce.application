@@ -16,7 +16,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -60,7 +59,7 @@ public class CartServiceImplementation implements CartService {
         newCartItem.setProductPrice(product.getSpecialPrice());
         cartItemRepository.save(newCartItem);
 
-        cart.setTotaPrice(cart.getTotaPrice() + (product.getSpecialPrice() * quantity));
+        cart.setTotalPrice(cart.getTotalPrice() + (product.getSpecialPrice() * quantity));
         cartRepository.save(cart);
 
         CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
@@ -87,14 +86,35 @@ public class CartServiceImplementation implements CartService {
         List<CartDTO> cartDTOSList = cartsList.stream()
                 .map(cart -> {
                     CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
-                    List<ProductDTO> products = cart.getCartItems().stream()
-                            .map(p -> modelMapper.map(p, ProductDTO.class))
-                            .toList();
+                    List<ProductDTO> products = mapperToProductDTO(cart);
                     cartDTO.setProductDTOS(products);
                     return cartDTO;
                 }).toList();
         return cartDTOSList;
 
+    }
+
+    @Override
+    public CartDTO getCart() {
+        String email = authUtil.loggedInEmail();
+        Cart cart = cartRepository.findCartByEmail(email);
+        Long cartId = cart.getCartId();
+
+        Cart existingCart = cartRepository.findCartByEmailAndCartId(email, cartId);
+        if(existingCart == null) {
+            throw new ResourceNotFoundException("Cart", "cartId", cartId);
+        }
+        CartDTO cartDTO = modelMapper.map(existingCart, CartDTO.class);
+        List<ProductDTO> products = mapperToProductDTO(existingCart);
+        cartDTO.setProductDTOS(products);
+
+        double total = cart.getCartItems().stream()
+                .mapToDouble(item -> item.getProductPrice() * item.getQuantity())
+                .sum();
+
+        cartDTO.setTotalPrice(total);
+
+        return cartDTO;
     }
 
     private Cart checkUserCart(){
@@ -106,7 +126,20 @@ public class CartServiceImplementation implements CartService {
 
         Cart cart = new Cart();
         cart.setUser(authUtil.loggedInUser());
-        cart.setTotaPrice(0.00);
+        cart.setTotalPrice(0.00);
         return cartRepository.save(cart);
     }
+
+    private List<ProductDTO> mapperToProductDTO(Cart cart) {
+        List<ProductDTO> productDTOS = cart.getCartItems().stream()
+                .map(item -> {
+                    ProductDTO dto = modelMapper.map(item.getProduct(), ProductDTO.class);
+                    dto.setQuantity(item.getQuantity());
+                    dto.setDiscount(item.getDiscount());
+                    return dto;
+                })
+                .toList();
+        return productDTOS;
+    }
+
 }

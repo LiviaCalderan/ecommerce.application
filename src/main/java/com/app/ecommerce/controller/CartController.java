@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api")
@@ -22,6 +23,12 @@ public class CartController {
                                                     @PathVariable Integer quantity){
         CartDTO cartDTO = cartService.addProductToCart(productId, quantity);
         return new ResponseEntity<>(cartDTO, HttpStatus.OK);
+    }
+
+    @GetMapping("/carts/users/cart")
+    public ResponseEntity<CartDTO> getUserCart(){
+        CartDTO cartDTO = cartService.getCart();
+        return new ResponseEntity<>(cartDTO, HttpStatus.FOUND);
     }
 
     // ------- for admin panels --------
