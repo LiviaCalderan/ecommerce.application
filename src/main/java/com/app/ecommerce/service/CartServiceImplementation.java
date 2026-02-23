@@ -190,6 +190,22 @@ public class CartServiceImplementation implements CartService {
         return cartDTO;
     }
 
+    @Override
+    public void updateProductInCarts(Long cartId, Long productId) {
+        Cart cart = cartRepository.findById(cartId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cart", "cartId", cartId));
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
+
+        CartItem cartItem = cartItemRepository.findCartItemByProduct_ProductIdAndCart_CartId(productId, cart.getCartId());
+        if(cartItem == null) {
+            throw new APIException("Product " + product.getProductName() + " does not exist in the cart");
+        }
+
+        recalculateCartTotal(cart);
+        cartItemRepository.save(cartItem);
+    }
+
     private Cart checkUserCart(){
 
         Cart userCart = cartRepository.findCartByEmail((authUtil.loggedInEmail()));
