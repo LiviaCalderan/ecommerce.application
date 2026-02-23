@@ -159,6 +159,37 @@ public class CartServiceImplementation implements CartService {
 
     }
 
+    @Transactional
+    @Override
+    public CartDTO deleteCartItem(Long productId) {
+        String email = authUtil.loggedInEmail();
+        Cart cart = cartRepository.findCartByEmail(email);
+        if (cart == null) {
+            throw new ResourceNotFoundException("Cart", "email", email);
+        }
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
+
+        CartItem cartItem = cartItemRepository.findCartItemByProduct_ProductIdAndCart_CartId(productId, cart.getCartId());
+        if(cartItem == null) {
+            throw new APIException("Product " + product.getProductName() + " does not exist in the cart");
+        } else {
+            cartItem.setCart(null);
+            cart.getCartItems().remove(cartItem);
+            cartItemRepository.delete(cartItem);
+            cartItemRepository.flush();
+        }
+
+        recalculateCartTotal(cart);
+        cartRepository.save(cart);
+
+        CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
+        cartDTO.setProductDTOS(mapperToProductDTO(cart));
+
+        return cartDTO;
+    }
+
     private Cart checkUserCart(){
 
         Cart userCart = cartRepository.findCartByEmail((authUtil.loggedInEmail()));
