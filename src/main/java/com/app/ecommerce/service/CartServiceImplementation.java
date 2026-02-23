@@ -11,10 +11,12 @@ import com.app.ecommerce.repository.CartItemRepository;
 import com.app.ecommerce.repository.CartRepository;
 import com.app.ecommerce.repository.ProductRepository;
 import com.app.ecommerce.util.AuthUtil;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -59,19 +61,13 @@ public class CartServiceImplementation implements CartService {
         newCartItem.setProductPrice(product.getSpecialPrice());
         cartItemRepository.save(newCartItem);
 
-        cart.setTotalPrice(cart.getTotalPrice() + (product.getSpecialPrice() * quantity));
+        cart.getCartItems().add(newCartItem);
+        recalculateCartTotal(cart);
         cartRepository.save(cart);
 
         CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
-
-        List<CartItem> cartItems = cart.getCartItems();
-        Stream<ProductDTO> productDTOStream = cartItems.stream().map(item -> {
-            ProductDTO map = modelMapper.map(item.getProduct(), ProductDTO.class);
-            map.setQuantity(item.getQuantity());
-            return map;
-        });
-
-        cartDTO.setProductDTOS(productDTOStream.toList());
+        List<ProductDTO> products = mapperToProductDTO(cart);
+        cartDTO.setProductDTOS(products);
 
         return cartDTO;
     }
@@ -117,6 +113,52 @@ public class CartServiceImplementation implements CartService {
         return cartDTO;
     }
 
+    @Override
+    @Transactional
+    public CartDTO updateProductQuantityInCart(Long productId, Integer quantity) {
+
+        Cart cart = checkUserCart();
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
+
+        CartItem cartItem = cartItemRepository.findCartItemByProduct_ProductIdAndCart_CartId(productId, cart.getCartId());
+        if(cartItem == null) {
+            throw new APIException("Product " + product.getProductName() + " does not exist in the cart");
+        }
+
+        int newQuantity = cartItem.getQuantity() + quantity;
+
+        if(newQuantity < 0) {
+            throw new APIException("Product " + product.getProductName() + " is not available");
+        }
+        if(newQuantity > product.getQuantity()) {
+            throw new APIException("Please, make an order of the " + product.getProductName()
+                    + " less than or equal to " + product.getQuantity());
+        }
+
+        if (newQuantity == 0) {
+            cartItem.setCart(null);
+            cart.getCartItems().remove(cartItem);
+            cartItemRepository.delete(cartItem);
+            cartItemRepository.flush();
+        } else {
+            cartItem.setQuantity(newQuantity);
+            cartItem.setProductPrice(product.getSpecialPrice());
+            cartItem.setDiscount(product.getDiscount());
+
+        }
+
+        recalculateCartTotal(cart);
+        cartRepository.save(cart);
+
+        CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
+        cartDTO.setProductDTOS(mapperToProductDTO(cart));
+
+        return cartDTO;
+
+    }
+
     private Cart checkUserCart(){
 
         Cart userCart = cartRepository.findCartByEmail((authUtil.loggedInEmail()));
@@ -127,6 +169,7 @@ public class CartServiceImplementation implements CartService {
         Cart cart = new Cart();
         cart.setUser(authUtil.loggedInUser());
         cart.setTotalPrice(0.00);
+        cart.setCartItems(new ArrayList<>());
         return cartRepository.save(cart);
     }
 
@@ -140,6 +183,17 @@ public class CartServiceImplementation implements CartService {
                 })
                 .toList();
         return productDTOS;
+    }
+
+    private void recalculateCartTotal(Cart cart) {
+
+        double total = 0.0;
+
+        for (CartItem item : cart.getCartItems()) {
+            total += item.getProductPrice() * item.getQuantity();
+        }
+
+        cart.setTotalPrice(total);
     }
 
 }

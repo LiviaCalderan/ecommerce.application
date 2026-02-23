@@ -1,5 +1,6 @@
 package com.app.ecommerce.controller;
 
+import com.app.ecommerce.model.Cart;
 import com.app.ecommerce.payload.CartDTO;
 import com.app.ecommerce.service.CartService;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,6 @@ import java.util.UUID;
 public class CartController {
 
     private final CartService cartService;
-
 
     @PostMapping("/carts/products/{productId}/quantity/{quantity}")
     public ResponseEntity<CartDTO> addProductToCart(@PathVariable Long productId,
@@ -36,5 +36,12 @@ public class CartController {
     public ResponseEntity<List<CartDTO>> getAllCarts(){
         List<CartDTO> cartDTOS = cartService.getAllCarts();
         return new ResponseEntity<List<CartDTO>>(cartDTOS, HttpStatus.FOUND);
+    }
+
+    @PutMapping("/cart/products/{productId}/quantity/{operation}")
+    public ResponseEntity<CartDTO> updateCartProduct(@PathVariable Long productId,
+                                                     @PathVariable String operation){
+        CartDTO cartDTO = cartService.updateProductQuantityInCart(productId, operation.equalsIgnoreCase("delete") ? -1 : 1);
+        return new ResponseEntity<>(cartDTO, HttpStatus.OK);
     }
 }
