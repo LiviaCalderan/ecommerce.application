@@ -53,10 +53,25 @@ public class AddressServiceImplementation implements AddressService {
     }
 
     @Override
-    public AddressDTO getAddressById(Long addressId) {
+    public AddressDTO fetchAddressById(Long addressId) {
         Address address = addressRepository.findById(addressId)
                 .orElseThrow(() -> new ResourceNotFoundException("Address",  "addressId", addressId));
         AddressDTO addressDTO = modelMapper.map(address, AddressDTO.class);
         return addressDTO;
+    }
+
+    @Override
+    public List<AddressDTO> fetchAddressesByUser() {
+
+        User user = authUtil.loggedInUser();
+        List<Address> addressList = user.getAddresses();
+        if (addressList.isEmpty()) {
+            throw new APIException("No Address Found!");
+        }
+        List<AddressDTO> userAddressesListDTO = addressList.stream()
+                .map(address -> modelMapper.map(address, AddressDTO.class))
+                .toList();
+
+        return userAddressesListDTO;
     }
 }
