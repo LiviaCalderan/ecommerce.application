@@ -40,4 +40,11 @@ public class AddressController {
         List<AddressDTO> allAddressesDTO = addressService.fetchAddressesByUser();
         return new ResponseEntity<>(allAddressesDTO, HttpStatus.OK);
     }
+
+    @PutMapping("/addresses/{addressId}")
+    public ResponseEntity<AddressDTO> updateAddressById(@PathVariable Long addressId,
+                                                        @RequestBody AddressDTO addressDTO) {
+        AddressDTO updatedAddressDTO = addressService.updateAddressById(addressId, addressDTO);
+        return new ResponseEntity<>(updatedAddressDTO, HttpStatus.OK);
+    }
 }

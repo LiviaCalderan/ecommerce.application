@@ -6,6 +6,7 @@ import com.app.ecommerce.model.Address;
 import com.app.ecommerce.model.User;
 import com.app.ecommerce.payload.AddressDTO;
 import com.app.ecommerce.repository.AddressRepository;
+import com.app.ecommerce.repository.UserRepository;
 import com.app.ecommerce.util.AuthUtil;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -18,6 +19,7 @@ import java.util.List;
 public class AddressServiceImplementation implements AddressService {
 
     private final AddressRepository addressRepository;
+    private final UserRepository userRepository;
     private final AuthUtil authUtil;
     private final ModelMapper modelMapper;
 
@@ -73,5 +75,28 @@ public class AddressServiceImplementation implements AddressService {
                 .toList();
 
         return userAddressesListDTO;
+    }
+
+    @Override
+    public AddressDTO updateAddressById(Long addressId, AddressDTO addressDTO) {
+
+        Address addressFromDB = addressRepository.findById(addressId)
+                .orElseThrow(() -> new ResourceNotFoundException("Address",  "addressId", addressId));
+
+        addressFromDB.setCity(addressDTO.getCity());
+        addressFromDB.setCountry(addressDTO.getCountry());
+        addressFromDB.setStreet(addressDTO.getStreet());
+        addressFromDB.setState(addressDTO.getState());
+        addressFromDB.setBuildingName(addressDTO.getBuildingName());
+        addressFromDB.setPincode(addressDTO.getPincode());
+        addressFromDB.setNumber(addressDTO.getNumber());
+
+        Address updatedAddress = addressRepository.save(addressFromDB);
+
+        User user = addressFromDB.getUser();
+        user.getAddresses().removeIf(address -> address.getAddressId().equals(addressId));
+        user.getAddresses().add(updatedAddress);
+        userRepository.save(user);
+        return modelMapper.map(updatedAddress, AddressDTO.class);
     }
 }
