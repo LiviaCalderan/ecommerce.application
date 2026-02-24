@@ -8,6 +8,7 @@ import com.app.ecommerce.payload.AddressDTO;
 import com.app.ecommerce.repository.AddressRepository;
 import com.app.ecommerce.repository.UserRepository;
 import com.app.ecommerce.util.AuthUtil;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -98,5 +99,20 @@ public class AddressServiceImplementation implements AddressService {
         user.getAddresses().add(updatedAddress);
         userRepository.save(user);
         return modelMapper.map(updatedAddress, AddressDTO.class);
+    }
+
+    @Override
+    @Transactional
+    public AddressDTO deleteAddress(Long addressId) {
+
+        Address addressFromDB = addressRepository.findById(addressId)
+                .orElseThrow(() -> new ResourceNotFoundException("Address",  "addressId", addressId));
+
+        addressRepository.delete(addressFromDB);
+
+        User user = addressFromDB.getUser();
+        user.getAddresses().removeIf(address -> address.getAddressId().equals(addressId));
+        userRepository.save(user);
+        return modelMapper.map(addressFromDB, AddressDTO.class);
     }
 }
