@@ -2,10 +2,12 @@ package com.app.ecommerce.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +32,7 @@ public class Address {
     private String buildingName;
 
     @NotBlank
-    private Integer number;
+    private String number;
 
     @NotBlank
     @Size(min = 3, message = "City name must be at least 3 characters")
@@ -48,8 +50,9 @@ public class Address {
     @Size(min = 6, message = "Pincode/CEP must be at least 5 characters")
     private String pincode;
 
-    @ManyToMany(mappedBy = "addresses")
-    private List<User> users = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
 
 }
