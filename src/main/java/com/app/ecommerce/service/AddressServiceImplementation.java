@@ -1,5 +1,7 @@
 package com.app.ecommerce.service;
 
+import com.app.ecommerce.exceptions.APIException;
+import com.app.ecommerce.exceptions.ResourceNotFoundException;
 import com.app.ecommerce.model.Address;
 import com.app.ecommerce.model.User;
 import com.app.ecommerce.payload.AddressDTO;
@@ -34,5 +36,19 @@ public class AddressServiceImplementation implements AddressService {
 
         Address savedAddress = addressRepository.save(address);
         return modelMapper.map(savedAddress, AddressDTO.class);
+    }
+
+    @Override
+    public List<AddressDTO> fetchAllAdresses() {
+        List<Address> addressList = addressRepository.findAll();
+        if (addressList.isEmpty()) {
+            throw new APIException("No Address Found!");
+        }
+
+        List<AddressDTO> addressDTOList = addressList.stream()
+                .map(address -> modelMapper.map(address, AddressDTO.class))
+                .toList();
+
+        return addressDTOList;
     }
 }

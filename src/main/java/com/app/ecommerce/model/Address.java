@@ -28,7 +28,7 @@ public class Address {
     private String street;
 
     @NotBlank
-    @Size(min = 5, message = "Building name must be at least 5 characters")
+    @Size(min = 4, message = "Building name must be at least 4 characters")
     private String buildingName;
 
     @NotBlank
