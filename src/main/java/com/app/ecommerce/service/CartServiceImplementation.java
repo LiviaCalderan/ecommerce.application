@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -45,12 +44,12 @@ public class CartServiceImplementation implements CartService {
         if(cartItem != null) {
             throw new APIException("Product " + product.getProductName() + " already exists");
         }
-        if(product.getQuantity() == 0) {
+        if(product.getStock() == 0) {
             throw new APIException("Product " + product.getProductName() + " is not available");
         }
-        if(product.getQuantity() < quantity) {
+        if(product.getStock() < quantity) {
             throw new APIException("Please, make an order of the " + product.getProductName()
-                    + " less than or equal to " + product.getQuantity());
+                    + " less than or equal to " + product.getStock());
         }
 
         CartItem newCartItem = new CartItem();
@@ -132,9 +131,9 @@ public class CartServiceImplementation implements CartService {
         if(newQuantity < 0) {
             throw new APIException("Product " + product.getProductName() + " is not available");
         }
-        if(newQuantity > product.getQuantity()) {
+        if(newQuantity > product.getStock()) {
             throw new APIException("Please, make an order of the " + product.getProductName()
-                    + " less than or equal to " + product.getQuantity());
+                    + " less than or equal to " + product.getStock());
         }
 
         if (newQuantity == 0) {
@@ -224,7 +223,7 @@ public class CartServiceImplementation implements CartService {
         List<ProductDTO> productDTOS = cart.getCartItems().stream()
                 .map(item -> {
                     ProductDTO dto = modelMapper.map(item.getProduct(), ProductDTO.class);
-                    dto.setQuantity(item.getQuantity());
+                    dto.setStock(item.getQuantity());
                     dto.setDiscount(item.getDiscount());
                     return dto;
                 })

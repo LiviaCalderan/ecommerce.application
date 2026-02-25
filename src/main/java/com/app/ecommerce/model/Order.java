@@ -30,7 +30,9 @@ public class Order {
     private List<OrderItem> orderItems = new ArrayList<>();
 
     private Double totalAmount;
-    private String orderStatus;
+
+    @Enumerated(EnumType.STRING)
+    private OrderStatus orderStatus =  OrderStatus.PENDING;
 
     private LocalDateTime orderDate;
 

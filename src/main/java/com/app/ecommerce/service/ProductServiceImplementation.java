@@ -98,7 +98,7 @@ public class ProductServiceImplementation implements ProductService {
         Product product = modelMapper.map(updateProductDTO, Product.class);
         existingProductDB.setProductName(product.getProductName());
         existingProductDB.setDescription(product.getDescription());
-        existingProductDB.setQuantity(product.getQuantity());
+        existingProductDB.setStock(product.getStock());
         existingProductDB.setPrice(product.getPrice());
         existingProductDB.setDiscount(product.getDiscount());
 
