@@ -5,6 +5,8 @@ import com.app.ecommerce.payload.ProductDTO;
 import com.app.ecommerce.payload.ProductResponseDTO;
 import com.app.ecommerce.repository.ProductRepository;
 import com.app.ecommerce.service.ProductService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,11 +19,16 @@ import java.io.IOException;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
+@Tag(name = "Product", description = "Product related operations")
 public class ProductController {
 
     private final ProductService productService;
 
     @PostMapping("/admin/categories/{categoryId}/product")
+    @Operation(
+            summary = "Add Product To Category",
+            description = "Creates a new product and links it to the informed category."
+    )
     public ResponseEntity<ProductDTO> addProduct(@Valid @RequestBody ProductDTO productDto,
                                                  @PathVariable Long categoryId){
 
@@ -30,6 +37,10 @@ public class ProductController {
     }
 
     @GetMapping("/public/product")
+    @Operation(
+            summary = "Get All Products",
+            description = "Returns a paginated list of products with sorting options."
+    )
     public ResponseEntity<ProductResponseDTO> getAllProducts(
             @RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber,
             @RequestParam(name = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) Integer pageSize,
@@ -41,6 +52,10 @@ public class ProductController {
     }
 
     @GetMapping("/public/categories/{categoryId}/products")
+    @Operation(
+            summary = "Get Products By Category",
+            description = "Returns paginated products filtered by the informed category."
+    )
     public ResponseEntity<ProductResponseDTO> getProductsByCategory(@PathVariable Long categoryId,
                                                                     @RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber,
                                                                     @RequestParam(name = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) Integer pageSize,
@@ -52,6 +67,10 @@ public class ProductController {
     }
 
     @GetMapping("/public/products/keyword/{keyword}")
+    @Operation(
+            summary = "Get Products By Keyword",
+            description = "Searches products by keyword with pagination and sorting."
+    )
     public ResponseEntity<ProductResponseDTO> getProductsByKeyword(@PathVariable String keyword,
                                                                    @RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber,
                                                                    @RequestParam(name = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) Integer pageSize,
@@ -62,6 +81,10 @@ public class ProductController {
     }
 
     @PutMapping("/admin/products/{productId}")
+    @Operation(
+            summary = "Update Product",
+            description = "Updates the product data for the informed product id."
+    )
     public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long productId,
                                                     @Valid @RequestBody ProductDTO updateProductDTO){
         ProductDTO updatedProductDTO = productService.updateProduct(productId, updateProductDTO);
@@ -69,12 +92,20 @@ public class ProductController {
     }
 
     @DeleteMapping("/admin/products/{productId}")
+    @Operation(
+            summary = "Delete Product",
+            description = "Removes the product identified by the informed id."
+    )
     public ResponseEntity<ProductDTO> deleteProduct(@PathVariable Long productId){
         ProductDTO productDTO = productService.deleteProduct(productId);
         return new ResponseEntity<>(productDTO, HttpStatus.NO_CONTENT);
     }
 
     @PutMapping("/products/{productId}/image")
+    @Operation(
+            summary = "Update Product Image",
+            description = "Uploads and replaces the image of the informed product."
+    )
     public ResponseEntity<ProductDTO> updateProductImage(@PathVariable Long productId,
                                                          @RequestParam("image") MultipartFile image) throws IOException {
         ProductDTO updateProductDTO = productService.updateProductImage(productId, image);
