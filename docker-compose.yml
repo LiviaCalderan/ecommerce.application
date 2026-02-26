@@ -3,12 +3,12 @@ services:
     container_name: postgres_container
     image: postgres:14
     environment:
-      POSTGRES_USER: test1
-      POSTGRES_PASSWORD: test1
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: /data/postgres
-      POSTGRES_DB: ecommerce-db
     volumes:
-      - postgres:/data/postgres
+      - postgres_data:/var/lib/postgresql/data
     ports:
       - "5434:5432"
     networks:
@@ -34,5 +34,5 @@ networks:
     driver: bridge
 
 volumes:
-  postgres:
+  postgres_data:
   pgadmin:
