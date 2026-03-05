@@ -36,7 +36,7 @@ public class ProductController {
         return new ResponseEntity<>(savedproductDTO, HttpStatus.CREATED);
     }
 
-    @GetMapping("/public/product")
+    @GetMapping("/public/products")
     @Operation(
             summary = "Get All Products",
             description = "Returns a paginated list of products with sorting options."
