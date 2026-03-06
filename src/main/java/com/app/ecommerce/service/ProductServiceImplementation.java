@@ -36,8 +36,11 @@ public class ProductServiceImplementation implements ProductService {
    private final CartService cartService;
 
 
-    @Value("${project.image}")
+   @Value("${project.image}")
    private String path;
+
+    @Value("${image.base.url}")
+    private String imageBaseUrl;
 
     @Override
     public ProductDTO addProduct(Long categoryId, ProductDTO productDTO) {
@@ -147,6 +150,10 @@ public class ProductServiceImplementation implements ProductService {
         return modelMapper.map(updatedProduct, ProductDTO.class);
     }
 
+    private String constructImageUrl(String imageName) {
+        return imageBaseUrl.endsWith("/") ? imageBaseUrl + imageName : imageBaseUrl + "/" + imageName;
+    }
+
     private ProductResponseDTO buildProductResponseDTO(Page<Product> productPage) {
 
 //        if(productPage.getTotalElements() == 0){
@@ -154,7 +161,11 @@ public class ProductServiceImplementation implements ProductService {
 //        }
 
         List<ProductDTO> productsDTO = productPage.getContent().stream()
-                .map(product -> modelMapper.map(product, ProductDTO.class))
+                .map(product -> {
+                    ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
+                    productDTO.setImage(constructImageUrl(product.getImage()));
+                    return productDTO;
+                })
                 .toList();
 
         ProductResponseDTO response = new ProductResponseDTO();
