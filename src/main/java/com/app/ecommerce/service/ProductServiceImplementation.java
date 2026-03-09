@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -64,9 +65,22 @@ public class ProductServiceImplementation implements ProductService {
     }
 
     @Override
-    public ProductResponseDTO fetchAllProducts(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+    public ProductResponseDTO fetchAllProducts(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder, String keyword, String category) {
 
-        Page<Product> productPage = productRepository.findAll(buildPageable(pageNumber, pageSize, sortBy, sortOrder));
+        Specification<Product> spec = Specification.where(
+                (root, query, criteriaBuilder) -> criteriaBuilder.conjunction()
+        );
+        if (keyword != null && !keyword.isEmpty()) {
+            spec = spec.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.like(criteriaBuilder.lower(root.get("productName")), "%" + keyword.toLowerCase() + "%"));
+        }
+
+        if (category != null && !category.isEmpty()) {
+            spec = spec.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.like(root.get("category").get("categoryName"), category));
+        }
+
+        Page<Product> productPage = productRepository.findAll(spec, buildPageable(pageNumber, pageSize, sortBy, sortOrder));
 
         return buildProductResponseDTO(productPage);
     }
