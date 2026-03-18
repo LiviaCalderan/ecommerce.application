@@ -15,6 +15,7 @@ import com.app.ecommerce.util.AuthUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -31,6 +32,12 @@ public class CartServiceImplementation implements CartService {
 
     private final AuthUtil authUtil;
     private final ModelMapper modelMapper;
+
+    @Value("${project.image}")
+    private String path;
+
+    @Value("${image.base.url}")
+    private String imageBaseUrl;
 
     @Override
     public CartDTO addProductToCart(Long productId, Integer quantity) {
@@ -92,16 +99,10 @@ public class CartServiceImplementation implements CartService {
 
     @Override
     public CartDTO getCart() {
-        String email = authUtil.loggedInEmail();
-        Cart cart = cartRepository.findCartByEmail(email);
-        Long cartId = cart.getCartId();
+        Cart cart = checkUserCart();
 
-        Cart existingCart = cartRepository.findCartByEmailAndCartId(email, cartId);
-        if(existingCart == null) {
-            throw new ResourceNotFoundException("Cart", "cartId", cartId);
-        }
-        CartDTO cartDTO = modelMapper.map(existingCart, CartDTO.class);
-        List<ProductDTO> products = mapperToProductDTO(existingCart);
+        CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
+        List<ProductDTO> products = mapperToProductDTO(cart);
         cartDTO.setProductDTOS(products);
 
         double total = cart.getCartItems().stream()
@@ -117,7 +118,7 @@ public class CartServiceImplementation implements CartService {
     @Transactional
     public CartDTO updateProductQuantityInCart(Long productId, Integer quantity) {
 
-        Cart cart = checkUserCart();
+        Cart cart = cartRepository.findCartByEmail(authUtil.loggedInEmail());
 
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
@@ -206,43 +207,6 @@ public class CartServiceImplementation implements CartService {
         cartItemRepository.save(cartItem);
     }
 
-    @Override
-    public String createOrUpdateCartWithItems(List<CartItemsDTO> cartItemsDTOS) {
-
-        Cart cart = checkUserCart();
-        if(cart != null) {
-            // Clear all current items in the existing cart
-            cartItemRepository.deleteAllByCartId(cart.getCartId());
-        }
-        // Process each item in the request to add to the cart
-        for (CartItemsDTO cartItemsDTO : cartItemsDTOS) {
-            Long productId = cartItemsDTO.getProductDTO().getProductId();
-            Integer quantity = cartItemsDTO.getQuantity();
-
-            // Find the product by id
-            Product product = productRepository.findById(productId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
-
-            // Directly update product stock and total price
-            // product.setStock(product.getStock() -  quantity);
-
-            // Create and save cart item
-            CartItem cartItem = new CartItem();
-            cartItem.setProduct(product);
-            cartItem.setCart(cart);
-            cartItem.setQuantity(quantity);
-            cartItem.setProductPrice(product.getSpecialPrice());
-            cartItem.setDiscount(product.getDiscount());
-            cartItemRepository.save(cartItem);
-            cart.getCartItems().add(cartItem);
-
-        }
-        recalculateCartTotal(cart);
-        cartRepository.save(cart);
-        return "Cart created/update with the new items successfully!";
-
-    }
-
     private Cart checkUserCart(){
 
         Cart userCart = cartRepository.findCartByEmail((authUtil.loggedInEmail()));
@@ -257,11 +221,17 @@ public class CartServiceImplementation implements CartService {
         return cartRepository.save(cart);
     }
 
+    private String constructImageUrl(String imageName) {
+        return imageBaseUrl.endsWith("/") ? imageBaseUrl + imageName : imageBaseUrl + "/" + imageName;
+    }
+
     private List<ProductDTO> mapperToProductDTO(Cart cart) {
         List<ProductDTO> productDTOS = cart.getCartItems().stream()
                 .map(item -> {
                     ProductDTO dto = modelMapper.map(item.getProduct(), ProductDTO.class);
-                    dto.setStock(item.getQuantity());
+                    dto.setStock(item.getProduct().getStock()); // estoque real do produto
+                    dto.setQuantity(item.getQuantity());
+                    dto.setImage(constructImageUrl(item.getProduct().getImage()));
                     dto.setDiscount(item.getDiscount());
                     return dto;
                 })

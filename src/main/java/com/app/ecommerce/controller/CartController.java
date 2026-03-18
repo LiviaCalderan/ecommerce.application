@@ -22,15 +22,6 @@ public class CartController {
 
     private final CartService cartService;
 
-    @PostMapping("/cart/create")
-    @Operation(
-            summary = "Create or Update Cart",
-            description = "Permit create or update a cart from frontend."
-    )
-    public ResponseEntity<String> createOrUpdateCart(@RequestBody List<CartItemsDTO> cartItemsDTOS){
-        String response = cartService.createOrUpdateCartWithItems(cartItemsDTOS);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
 
     @PostMapping("/carts/products/{productId}/quantity/{quantity}")
     @Operation(
@@ -50,7 +41,7 @@ public class CartController {
     )
     public ResponseEntity<CartDTO> getUserCart(){
         CartDTO cartDTO = cartService.getCart();
-        return new ResponseEntity<>(cartDTO, HttpStatus.FOUND);
+        return new ResponseEntity<>(cartDTO, HttpStatus.OK);
     }
 
     // ------- for admin panels --------
@@ -61,7 +52,7 @@ public class CartController {
     )
     public ResponseEntity<List<CartDTO>> getAllCarts(){
         List<CartDTO> cartDTOS = cartService.getAllCarts();
-        return new ResponseEntity<List<CartDTO>>(cartDTOS, HttpStatus.FOUND);
+        return new ResponseEntity<List<CartDTO>>(cartDTOS, HttpStatus.OK);
     }
 
     @PutMapping("/cart/products/{productId}/quantity/{operation}")
@@ -82,6 +73,6 @@ public class CartController {
     )
     public ResponseEntity<CartDTO> deleteCartProduct(@PathVariable Long productId){
         CartDTO cartDTO = cartService.deleteCartItem(productId);
-        return new ResponseEntity<>(cartDTO, HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(cartDTO, HttpStatus.OK);
     }
 }

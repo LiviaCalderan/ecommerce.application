@@ -11,11 +11,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CartItemsDTO {
-
-    private Long cartItemId;
-    private CartDTO cartDTO;
-    private ProductDTO productDTO;
+    private Long productId;
     private Integer quantity;
-    private Double discount;
-    private Double productPrice;
 }

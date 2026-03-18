@@ -36,15 +36,14 @@ public class WebSecurityConfig {
     private final AuthEntryPointJwt unauthorizedHandler;
 
     public WebSecurityConfig(UserDetailsService userDetailsService,
-                             AuthEntryPointJwt unauthorizedHandler) {
+                             AuthEntryPointJwt unauthorizedHandler,
+                             AuthTokenFilter authTokenFilter) {
         this.userDetailsService = userDetailsService;
         this.unauthorizedHandler = unauthorizedHandler;
+        this.authTokenFilter = authTokenFilter;
     }
 
-    @Bean
-    public AuthTokenFilter authJwtTokenFilter(){
-        return new AuthTokenFilter();
-    }
+    public AuthTokenFilter authTokenFilter;
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider(){
@@ -81,7 +80,7 @@ public class WebSecurityConfig {
                                 .requestMatchers("/images/**").permitAll()
                         .anyRequest().authenticated());
         http.authenticationProvider(authenticationProvider());
-        http.addFilterBefore(authJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
         http.headers(headers ->
                 headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
         return http.build();

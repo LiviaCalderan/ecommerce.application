@@ -20,5 +20,4 @@ public interface CartService {
 
     void updateProductInCarts(Long cartId, Long productId);
 
-    String createOrUpdateCartWithItems(List<CartItemsDTO> cartItemsDTOS);
 }
