@@ -2,6 +2,7 @@ package com.app.ecommerce.controller;
 
 import com.app.ecommerce.model.Cart;
 import com.app.ecommerce.payload.CartDTO;
+import com.app.ecommerce.payload.CartItemsDTO;
 import com.app.ecommerce.service.CartService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,6 +21,16 @@ import java.util.UUID;
 public class CartController {
 
     private final CartService cartService;
+
+    @PostMapping("/cart/create")
+    @Operation(
+            summary = "Create or Update Cart",
+            description = "Permit create or update a cart from frontend."
+    )
+    public ResponseEntity<String> createOrUpdateCart(@RequestBody List<CartItemsDTO> cartItemsDTOS){
+        String response = cartService.createOrUpdateCartWithItems(cartItemsDTOS);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
 
     @PostMapping("/carts/products/{productId}/quantity/{quantity}")
     @Operation(

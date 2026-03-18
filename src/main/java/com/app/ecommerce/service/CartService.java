@@ -1,6 +1,7 @@
 package com.app.ecommerce.service;
 
 import com.app.ecommerce.payload.CartDTO;
+import com.app.ecommerce.payload.CartItemsDTO;
 import jakarta.transaction.Transactional;
 
 import java.util.List;
@@ -18,4 +19,6 @@ public interface CartService {
     CartDTO deleteCartItem(Long productId);
 
     void updateProductInCarts(Long cartId, Long productId);
+
+    String createOrUpdateCartWithItems(List<CartItemsDTO> cartItemsDTOS);
 }

@@ -6,6 +6,7 @@ import com.app.ecommerce.model.Cart;
 import com.app.ecommerce.model.CartItem;
 import com.app.ecommerce.model.Product;
 import com.app.ecommerce.payload.CartDTO;
+import com.app.ecommerce.payload.CartItemsDTO;
 import com.app.ecommerce.payload.ProductDTO;
 import com.app.ecommerce.repository.CartItemRepository;
 import com.app.ecommerce.repository.CartRepository;
@@ -203,6 +204,43 @@ public class CartServiceImplementation implements CartService {
 
         recalculateCartTotal(cart);
         cartItemRepository.save(cartItem);
+    }
+
+    @Override
+    public String createOrUpdateCartWithItems(List<CartItemsDTO> cartItemsDTOS) {
+
+        Cart cart = checkUserCart();
+        if(cart != null) {
+            // Clear all current items in the existing cart
+            cartItemRepository.deleteAllByCartId(cart.getCartId());
+        }
+        // Process each item in the request to add to the cart
+        for (CartItemsDTO cartItemsDTO : cartItemsDTOS) {
+            Long productId = cartItemsDTO.getProductDTO().getProductId();
+            Integer quantity = cartItemsDTO.getQuantity();
+
+            // Find the product by id
+            Product product = productRepository.findById(productId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
+
+            // Directly update product stock and total price
+            // product.setStock(product.getStock() -  quantity);
+
+            // Create and save cart item
+            CartItem cartItem = new CartItem();
+            cartItem.setProduct(product);
+            cartItem.setCart(cart);
+            cartItem.setQuantity(quantity);
+            cartItem.setProductPrice(product.getSpecialPrice());
+            cartItem.setDiscount(product.getDiscount());
+            cartItemRepository.save(cartItem);
+            cart.getCartItems().add(cartItem);
+
+        }
+        recalculateCartTotal(cart);
+        cartRepository.save(cart);
+        return "Cart created/update with the new items successfully!";
+
     }
 
     private Cart checkUserCart(){

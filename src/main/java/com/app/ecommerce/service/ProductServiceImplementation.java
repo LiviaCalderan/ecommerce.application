@@ -43,6 +43,9 @@ public class ProductServiceImplementation implements ProductService {
     @Value("${image.base.url}")
     private String imageBaseUrl;
 
+    @Value("${product.default.image:default.png}")
+    private String defaultProductImage;
+
     @Override
     public ProductDTO addProduct(Long categoryId, ProductDTO productDTO) {
 
@@ -55,7 +58,7 @@ public class ProductServiceImplementation implements ProductService {
                         new ResourceNotFoundException("Category", "categoryId", categoryId));
 
         Product product = modelMapper.map(productDTO, Product.class);
-        product.setImage("default.png");
+        product.setImage(defaultProductImage);
         product.setCategory(category);
         double specialPrice = product.getPrice() - ((product.getDiscount() * 0.01) * product.getPrice());
         product.setSpecialPrice(specialPrice);
