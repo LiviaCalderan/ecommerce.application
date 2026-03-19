@@ -2,7 +2,11 @@ package com.app.ecommerce.controller;
 
 import com.app.ecommerce.payload.OrderDTO;
 import com.app.ecommerce.payload.OrderRequestDTO;
+import com.app.ecommerce.payload.StripePaymentDTO;
 import com.app.ecommerce.service.OrderService;
+import com.app.ecommerce.service.StripeService;
+import com.stripe.exception.StripeException;
+import com.stripe.model.PaymentIntent;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +22,8 @@ public class OrderController {
 
     private final OrderService orderService;
 
+    private final StripeService stripeService;
+
     @PostMapping("/order/user/payments/{paymentMethod}")
     @Operation(
             summary = "Create Order",
@@ -27,5 +33,15 @@ public class OrderController {
                                                 @PathVariable String paymentMethod) {
         OrderDTO order = orderService.placeOrder(orderRequestDTO, paymentMethod);
         return new ResponseEntity<>(order, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/order/stripe-client-secret")
+    @Operation(
+            summary = "Create Stripe Client Secret",
+            description = "Creates a Client Secret"
+    )
+    public ResponseEntity<String> createStripeClientSecret(@RequestBody StripePaymentDTO stripePaymentDTO) throws StripeException {
+        PaymentIntent paymentIntent = stripeService.paymentIntent(stripePaymentDTO);
+        return new ResponseEntity<String>(paymentIntent.getClientSecret(), HttpStatus.CREATED);
     }
 }
