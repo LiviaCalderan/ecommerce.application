@@ -15,11 +15,13 @@ public class UserInfoResponse  {
     private UUID id;
     private String username;
     private List<String> roles;
+    private String email;
 
-    public UserInfoResponse(UUID id, String username, List<String> roles ) {
+    public UserInfoResponse(UUID id, String username, List<String> roles, String email) {
         this.id = id;
         this.username = username;
         this.roles = roles;
+        this.email = email;
     }
 
 }

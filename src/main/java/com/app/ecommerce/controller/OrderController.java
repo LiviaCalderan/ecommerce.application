@@ -38,9 +38,10 @@ public class OrderController {
     @PostMapping("/order/stripe-client-secret")
     @Operation(
             summary = "Create Stripe Client Secret",
-            description = "Creates a Client Secret"
+            description = "Create Stripe Client Secret"
     )
     public ResponseEntity<String> createStripeClientSecret(@RequestBody StripePaymentDTO stripePaymentDTO) throws StripeException {
+        System.out.println("StripePaymentDTO: " + stripePaymentDTO);
         PaymentIntent paymentIntent = stripeService.paymentIntent(stripePaymentDTO);
         return new ResponseEntity<String>(paymentIntent.getClientSecret(), HttpStatus.CREATED);
     }

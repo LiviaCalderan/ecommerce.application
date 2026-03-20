@@ -61,7 +61,8 @@ public class AuthServiceImplementation implements AuthService {
         UserInfoResponse response = new UserInfoResponse(
                 userDetails.getId(),
                 userDetails.getUsername(),
-                roles
+                roles,
+                userDetails.getEmail()
         );
         return new AuthResponse(jwtCookie.toString(), response);
     }
@@ -127,7 +128,8 @@ public class AuthServiceImplementation implements AuthService {
         UserInfoResponse response = new UserInfoResponse(
                 userDetails.getId(),
                 userDetails.getUsername(),
-                roles
+                roles,
+                userDetails.getEmail()
         );
 
         return response;
