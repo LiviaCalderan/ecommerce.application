@@ -1,8 +1,8 @@
 package com.app.ecommerce.controller;
 
-import com.app.ecommerce.payload.OrderDTO;
-import com.app.ecommerce.payload.OrderRequestDTO;
-import com.app.ecommerce.payload.StripePaymentDTO;
+import com.app.ecommerce.config.AppConstants;
+import com.app.ecommerce.payload.*;
+import com.app.ecommerce.security.services.UserDetailsImplementation;
 import com.app.ecommerce.service.OrderService;
 import com.app.ecommerce.service.StripeService;
 import com.stripe.exception.StripeException;
@@ -12,7 +12,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api")
@@ -44,5 +47,27 @@ public class OrderController {
         System.out.println("StripePaymentDTO: " + stripePaymentDTO);
         PaymentIntent paymentIntent = stripeService.paymentIntent(stripePaymentDTO);
         return new ResponseEntity<String>(paymentIntent.getClientSecret(), HttpStatus.CREATED);
+    }
+
+    @GetMapping("/admin/orders")
+    @Operation(
+            summary = "Get All Orders",
+            description = "Fetch orders to display on Admin Panel."
+    )
+    public ResponseEntity<OrderResponse> getAllOrders(
+            @RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber,
+            @RequestParam(name = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) Integer pageSize,
+            @RequestParam(name = "sortBy", defaultValue = AppConstants.SORT_ORDERS_BY, required = false) String sortBy,
+            @RequestParam(name = "sortOrder", defaultValue = AppConstants.SORT_DIR) String sortOrder){
+        OrderResponse orderResponse = orderService.getAllOrders(pageNumber, pageSize, sortBy, sortOrder);
+        return  new ResponseEntity<>(orderResponse, HttpStatus.OK);
+    }
+
+    @PutMapping("/admin/orders/{orderId}/status")
+    public ResponseEntity<OrderDTO> updateOrderStatus(@PathVariable UUID orderId,
+                                                      @RequestBody OrderStatusUpdateDTO orderStatusUpdateDTO) {
+
+        OrderDTO order = orderService.updateOrderStatus(orderId, orderStatusUpdateDTO.getOrderStatus());
+        return new ResponseEntity<>(order, HttpStatus.OK);
     }
 }

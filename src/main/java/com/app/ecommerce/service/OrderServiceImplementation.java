@@ -6,18 +6,27 @@ import com.app.ecommerce.model.*;
 import com.app.ecommerce.payload.OrderDTO;
 import com.app.ecommerce.payload.OrderItemDTO;
 import com.app.ecommerce.payload.OrderRequestDTO;
+import com.app.ecommerce.payload.OrderResponse;
 import com.app.ecommerce.repository.*;
 import com.app.ecommerce.repository.PaymentRepository;
 import com.app.ecommerce.repository.ProductRepository;
+import com.app.ecommerce.security.services.UserDetailsImplementation;
 import com.app.ecommerce.util.AuthUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -102,5 +111,41 @@ public class OrderServiceImplementation implements OrderService {
         orderDTO.setAddressId(orderRequestDTO.getAddressId());
         return orderDTO;
 
+    }
+
+    @Override
+    public OrderResponse getAllOrders(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+        Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
+        Page<Order> orderPage = orderRepository.findAll(pageDetails);
+        List<Order> orderList = orderPage.getContent();
+
+        if (orderList.isEmpty()) {
+            throw new APIException("No order has been created yet");
+        }
+        List<OrderDTO> orderDTOS = orderList.stream()
+                .map( order -> modelMapper.map(order, OrderDTO.class))
+                .toList();
+
+        OrderResponse orderResponse = new OrderResponse();
+        orderResponse.setContent(orderDTOS);
+        orderResponse.setPageNumber(orderPage.getNumber());
+        orderResponse.setPageSize(orderPage.getSize());
+        orderResponse.setTotalPages(orderPage.getTotalPages());
+        orderResponse.setTotalElements(orderPage.getTotalElements());
+        orderResponse.setLastPage(orderPage.isLast());
+        return orderResponse;
+    }
+
+    @Override
+    public OrderDTO updateOrderStatus(UUID orderId, OrderStatus orderStatus) {
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "orderId",orderId.toString()));
+        order.setOrderStatus(orderStatus);
+        orderRepository.save(order);
+        return modelMapper.map(order, OrderDTO.class);
     }
 }
