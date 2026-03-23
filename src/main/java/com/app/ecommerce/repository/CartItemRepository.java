@@ -1,13 +1,10 @@
 package com.app.ecommerce.repository;
 
-import com.app.ecommerce.model.Cart;
 import com.app.ecommerce.model.CartItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
-import java.util.List;
 
 public interface CartItemRepository extends JpaRepository<CartItem, Long> {
 
@@ -17,4 +14,8 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
     @Modifying
     @Query("DELETE FROM CartItem ci WHERE ci.cart.cartId = :cartId")
     void deleteAllByCart_CartId(@Param("cartId") Long cartId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(value = "DELETE FROM cart_items WHERE product_id = :productId", nativeQuery = true)
+    int deleteAllByProductId(@Param("productId") Long productId);
 }

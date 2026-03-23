@@ -191,6 +191,24 @@ public class CartServiceImplementation implements CartService {
         return cartDTO;
     }
 
+    @Transactional
+    public void deleteCartItemByCartId(Long cartId, Long productId) {
+        Cart cart = cartRepository.findById(cartId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cart", "cartId", cartId));
+
+        CartItem cartItem = cartItemRepository
+                .findCartItemByProduct_ProductIdAndCart_CartId(productId, cartId);
+
+        if (cartItem == null) return;
+
+        cart.getCartItems().remove(cartItem);
+        cartItemRepository.delete(cartItem);
+        cartItemRepository.flush();
+
+        recalculateCartTotal(cart);
+        cartRepository.save(cart);
+    }
+
     @Override
     public void updateProductInCarts(Long cartId, Long productId) {
         Cart cart = cartRepository.findById(cartId)

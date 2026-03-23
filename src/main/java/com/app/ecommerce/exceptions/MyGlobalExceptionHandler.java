@@ -2,8 +2,7 @@ package com.app.ecommerce.exceptions;
 
 
 import com.app.ecommerce.payload.APIResponse;
-import com.app.ecommerce.security.response.MessageResponse;
-import org.springframework.http.HttpHeaders;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -47,5 +46,20 @@ public class MyGlobalExceptionHandler {
         String message = e.getMessage();
         APIResponse apiResponse = new APIResponse(message, false);
         return new ResponseEntity<>(apiResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(BusinessConflictException.class)
+    public ResponseEntity<APIResponse> myBusinessConflictException(BusinessConflictException e) {
+        APIResponse apiResponse = new APIResponse(e.getMessage(), false);
+        return new ResponseEntity<>(apiResponse, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<APIResponse> myDataIntegrityViolationException(DataIntegrityViolationException e) {
+        APIResponse apiResponse = new APIResponse(
+                "Cannot delete this resource because it is referenced by other records.",
+                false
+        );
+        return new ResponseEntity<>(apiResponse, HttpStatus.CONFLICT);
     }
 }

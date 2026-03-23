@@ -1,6 +1,7 @@
 package com.app.ecommerce.service;
 
 import com.app.ecommerce.exceptions.APIException;
+import com.app.ecommerce.exceptions.BusinessConflictException;
 import com.app.ecommerce.exceptions.ResourceNotFoundException;
 import com.app.ecommerce.model.Cart;
 import com.app.ecommerce.model.Category;
@@ -8,9 +9,12 @@ import com.app.ecommerce.model.Product;
 import com.app.ecommerce.payload.CartDTO;
 import com.app.ecommerce.payload.ProductDTO;
 import com.app.ecommerce.payload.ProductResponseDTO;
+import com.app.ecommerce.repository.CartItemRepository;
 import com.app.ecommerce.repository.CartRepository;
 import com.app.ecommerce.repository.CategoryRepository;
+import com.app.ecommerce.repository.OrderItemRepository;
 import com.app.ecommerce.repository.ProductRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,6 +36,8 @@ public class ProductServiceImplementation implements ProductService {
    private final ProductRepository productRepository;
    private final CategoryRepository categoryRepository;
    private final CartRepository cartRepository;
+   private final CartItemRepository cartItemRepository;
+   private final OrderItemRepository orderItemRepository;
    private final ModelMapper modelMapper;
    private final FileService fileService;
    private final CartService cartService;
@@ -142,14 +148,20 @@ public class ProductServiceImplementation implements ProductService {
         return modelMapper.map(updatedProduct, ProductDTO.class);
     }
 
+    @Transactional
     @Override
     public ProductDTO deleteProduct(Long productId) {
         Product productToDelete = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
 
-        List<Cart> carts = cartRepository.findCartsByProductId(productId);
-        carts.forEach(cart -> cartService.deleteCartItem(productId));
+        if (orderItemRepository.existsByProduct_ProductId(productId)) {
+            throw new BusinessConflictException(
+                    "Cannot delete this product because it is part of existing orders. Disable it instead."
+            );
+        }
 
+        cartItemRepository.deleteAllByProductId(productId);
+        cartItemRepository.flush();
         productRepository.delete(productToDelete);
         return modelMapper.map(productToDelete, ProductDTO.class);
 
@@ -165,6 +177,13 @@ public class ProductServiceImplementation implements ProductService {
         existingProductDB.setImage(fileName);
         Product updatedProduct = productRepository.save(existingProductDB);
         return modelMapper.map(updatedProduct, ProductDTO.class);
+    }
+
+    @Override
+    public ProductResponseDTO fetchAllProductsForAdmin(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+
+        Page<Product> productPage = productRepository.findAll(buildPageable(pageNumber, pageSize, sortBy, sortOrder));
+        return buildProductResponseDTO(productPage);
     }
 
     private String constructImageUrl(String imageName) {

@@ -53,6 +53,21 @@ public class ProductController {
 
     }
 
+    @GetMapping("/admin/products")
+    @Operation(
+            summary = "Get Products For Admin ",
+            description = "Returns a paginated list of products for admin dashboard."
+    )
+    public ResponseEntity<ProductResponseDTO> getAllProductsForAdmin(
+            @RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber,
+            @RequestParam(name = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) Integer pageSize,
+            @RequestParam(name = "sortBy", defaultValue = AppConstants.SORT_PRODUCTS_BY, required = false) String sortBy,
+            @RequestParam(name = "sortOrder", defaultValue = AppConstants.SORT_DIR, required = false) String sortOrder) {
+        ProductResponseDTO productResponse = productService.fetchAllProductsForAdmin(pageNumber, pageSize, sortBy, sortOrder);
+        return new ResponseEntity<>( productResponse, HttpStatus.OK);
+
+    }
+
     @GetMapping("/public/categories/{categoryId}/products")
     @Operation(
             summary = "Get Products By Category",

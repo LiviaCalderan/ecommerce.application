@@ -53,7 +53,7 @@ public class Product {
     private User user;
 
 
-    @OneToMany(mappedBy = "product", cascade = {CascadeType.PERSIST, CascadeType.MERGE,}, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "product")
     private List<CartItem> products= new ArrayList<>();
 
 }

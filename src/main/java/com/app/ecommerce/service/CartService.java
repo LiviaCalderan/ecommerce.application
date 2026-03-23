@@ -20,4 +20,7 @@ public interface CartService {
 
     void updateProductInCarts(Long cartId, Long productId);
 
+    @Transactional
+    void deleteCartItemByCartId(Long cartId, Long productId);
+
 }
