@@ -118,7 +118,7 @@ public class ProductController {
         return new ResponseEntity<>(productDTO, HttpStatus.NO_CONTENT);
     }
 
-    @PutMapping("/products/{productId}/image")
+    @PutMapping("/admin/products/{productId}/image")
     @Operation(
             summary = "Update Product Image",
             description = "Uploads and replaces the image of the informed product."
