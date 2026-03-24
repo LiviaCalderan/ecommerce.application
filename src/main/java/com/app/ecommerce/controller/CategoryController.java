@@ -34,7 +34,7 @@ public class CategoryController {
         return new ResponseEntity<>(categoryResponseDTO, HttpStatus.OK);
     }
 
-    @PostMapping("/public/categories")
+    @PostMapping("/admin/categories")
     @Operation(
             summary = "Create New Category",
             description = "Creates a new category with the provided information."
@@ -54,7 +54,7 @@ public class CategoryController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/public/categories/{categoryId}")
+    @PutMapping("/admin/categories/{categoryId}")
     @Operation(
             summary = "Update Category",
             description = "Updates the category data for the informed id."
