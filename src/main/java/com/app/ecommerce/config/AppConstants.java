@@ -11,4 +11,5 @@ public class AppConstants {
 
     public static final String SORT_ORDERS_BY = "totalAmount";
 
+    public static final String SORT_USERS_BY = "userId";
 }

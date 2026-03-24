@@ -1,9 +1,11 @@
 package com.app.ecommerce.service;
 
+import com.app.ecommerce.payload.UserResponse;
 import com.app.ecommerce.security.request.LoginRequest;
 import com.app.ecommerce.security.request.SignupRequest;
 import com.app.ecommerce.security.response.AuthResponse;
 import com.app.ecommerce.security.response.UserInfoResponse;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 
 public interface AuthService {
@@ -15,4 +17,6 @@ public interface AuthService {
     String signout();
 
     UserInfoResponse getCurrentUserDetails(Authentication authentication);
+
+    UserResponse getAllSellers(Pageable pageDetails);
 }

@@ -1,5 +1,6 @@
 package com.app.ecommerce.controller;
 
+import com.app.ecommerce.config.AppConstants;
 import com.app.ecommerce.security.request.LoginRequest;
 import com.app.ecommerce.security.request.SignupRequest;
 import com.app.ecommerce.security.response.AuthResponse;
@@ -10,6 +11,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -67,6 +71,17 @@ public class AuthController {
     public ResponseEntity<UserInfoResponse> getCurrentUserDetails(Authentication authentication) {
         UserInfoResponse response = authService.getCurrentUserDetails(authentication);
         return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping("/sellers")
+    @Operation(
+            summary = "Get All Sellers Users",
+            description = "Returns all users with Seller role." )
+    public ResponseEntity<?> getAllSellers(@RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber) {
+
+        Sort sortByAndOrder = Sort.by(AppConstants.SORT_USERS_BY).descending();
+        Pageable pageDetails = PageRequest.of(pageNumber, Integer.parseInt(AppConstants.PAGE_SIZE), sortByAndOrder);
+        return ResponseEntity.ok(authService.getAllSellers(pageDetails));
     }
 
 }

@@ -4,6 +4,8 @@ import com.app.ecommerce.exceptions.UserAlreadyExistsException;
 import com.app.ecommerce.model.AppRole;
 import com.app.ecommerce.model.Role;
 import com.app.ecommerce.model.User;
+import com.app.ecommerce.payload.UserDTO;
+import com.app.ecommerce.payload.UserResponse;
 import com.app.ecommerce.repository.RoleRepository;
 import com.app.ecommerce.repository.UserRepository;
 import com.app.ecommerce.security.jwt.JwtUtils;
@@ -14,6 +16,9 @@ import com.app.ecommerce.security.response.MessageResponse;
 import com.app.ecommerce.security.response.UserInfoResponse;
 import com.app.ecommerce.security.services.UserDetailsImplementation;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +31,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.*;
 
@@ -38,6 +44,7 @@ public class AuthServiceImplementation implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
+    private final ModelMapper modelMapper;
 
     @Override
     public AuthResponse signinUser(LoginRequest loginRequest) {
@@ -134,5 +141,24 @@ public class AuthServiceImplementation implements AuthService {
 
         return response;
     }
+
+    @Override
+    public UserResponse getAllSellers(Pageable pageable) {
+        Page<User> allSellerUsers = userRepository.findByRoleName(AppRole.ROLE_SELLER, pageable);
+        List<UserDTO> userDTOS = allSellerUsers.getContent()
+                .stream()
+                .map(p -> modelMapper.map(p, UserDTO.class))
+                .toList();
+        UserResponse response = new UserResponse();
+        response.setContent(userDTOS);
+        response.setTotalElements(allSellerUsers.getTotalElements());
+        response.setTotalPages(allSellerUsers.getTotalPages());
+        response.setPageNumber(allSellerUsers.getNumber());
+        response.setPageSize(allSellerUsers.getSize());
+        response.setLastPage(allSellerUsers.isLast());
+        return  response;
+    }
+
+
 
 }
