@@ -1,209 +1,176 @@
-﻿## 🛒 Ecommerce API
+# Ecommerce API
 
-🚧 **Status do Projeto: Em desenvolvimento**
+Backend RESTful para e-commerce desenvolvido em Java com Spring Boot.  
+O projeto implementa autenticacao com JWT em cookie HTTP-only, autorizacao por perfil e modulos de catalogo, carrinho, enderecos, pedidos e analytics.
 
-API RESTful de e-commerce desenvolvida com **Spring Boot**, implementando autenticação **JWT via cookie HTTP-only**, controle de acesso por perfil e arquitetura em camadas.
+## Status
 
-O projeto simula um backend completo de loja virtual, incluindo gerenciamento de produtos, categorias, carrinho, endereços e pedidos.
+Em desenvolvimento.
 
----
-
-## 🚀 Stack Tecnológica
+## Stack Tecnologica
 
 - Java 21
-- Spring Boot 4
-- Spring Security + JWT (jjwt)
+- Spring Boot 4.0.2
+- Spring Security
+- JWT (`jjwt`)
 - Spring Data JPA
 - PostgreSQL
+- Stripe Java SDK
 - Springdoc OpenAPI (Swagger UI)
 - Docker Compose (PostgreSQL + pgAdmin)
 
----
+## Funcionalidades
 
-## 🧩 Arquitetura
+- Autenticacao (`signup`, `signin`, `signout`) com sessao stateless via JWT em cookie.
+- Controle de acesso por perfil (`USER`, `SELLER`, `ADMIN`).
+- CRUD de categorias.
+- CRUD de produtos, busca por categoria/palavra-chave e upload de imagem.
+- Gestao de carrinho por usuario autenticado.
+- CRUD de enderecos.
+- Criacao e acompanhamento de pedidos.
+- Endpoint de analytics para painel administrativo.
+- Integracao com Stripe para geracao de `client secret`.
 
-O projeto segue uma arquitetura em camadas, com separação clara de responsabilidades:
+## Arquitetura
 
-```
+```text
 src/main/java/com/app/ecommerce
-├── config        # Configurações (Security, CORS, Beans)
-├── controller    # Camada de entrada (REST Controllers)
-├── exceptions    # Tratamento global de exceções
-├── model         # Entidades JPA
-├── payload       # DTOs (Request / Response)
-├── repository    # Interfaces JPA
-├── security      # JWT, filtros e autenticação
-├── service       # Regras de negócio
-└── util          # Classes utilitárias
+|-- config
+|-- controller
+|-- exceptions
+|-- model
+|-- payload
+|-- repository
+|-- security
+|-- service
+`-- util
 ```
 
----
+Padrao em camadas: `controller -> service -> repository`, com DTOs em `payload` e tratamento global de excecoes.
 
-## 🔐 Funcionalidades
+## Pre-requisitos
 
-### Autenticação & Segurança
-- Cadastro de usuário
-- Login com geração de JWT
-- Logout (invalidação de cookie)
-- Usuário autenticado
-- Controle de acesso por perfil (USER / SELLER / ADMIN)
+- JDK 21
+- Docker + Docker Compose (opcional, mas recomendado para banco local)
 
-### Categorias
-- CRUD completo
-- Paginação e ordenação
+## Configuracao de Ambiente
 
-### Produtos
-- CRUD completo
-- Busca por categoria
-- Busca por palavra-chave
-- Upload de imagem
-- Controle de acesso por perfil
-
-### Carrinho
-- Adicionar item
-- Atualizar quantidade
-- Remover item
-- Listar carrinho do usuário autenticado
-
-### Endereços
-- CRUD completo
-- Listagem por usuário
-
-### Pedidos
-- Criação de pedido
-- Escolha do método de pagamento
-
----
-
-## ⚙️ Pré-requisitos
-
-- Java 21
-- Maven 3.9+
-- Docker e Docker Compose (opcional, para banco de dados)
-
----
-
-## 🌱 Variáveis de Ambiente
-
-Defina no arquivo `.env` ou nas variáveis do sistema:
+Crie/atualize o arquivo `.env` na raiz do projeto com as variaveis abaixo:
 
 ```env
-# Banco de Dados
-DB_ECOM_URL=jdbc:postgresql://localhost:5434/seu_banco
-DB_ECOM_USERNAME=seu_usuario
-DB_ECOM_PASSWORD=sua_senha
+# Docker / PostgreSQL
+POSTGRES_DB=ecommerce-db
+POSTGRES_USER=ecom_user
+POSTGRES_PASSWORD=change_me
+PGADMIN_DEFAULT_EMAIL=pgadmin4@pgadmin.org
+PGADMIN_DEFAULT_PASSWORD=admin
+
+# Aplicacao / Banco
+DB_ECOM_URL=jdbc:postgresql://localhost:5434/ecommerce-db
+DB_ECOM_USERNAME=ecom_user
+DB_ECOM_PASSWORD=change_me
 
 # JPA
 JPA_ECOM_DDL_AUTO=update
 JPA_ECOM_SHOW_SQL=false
 
 # JWT
-JWT_ECOM_SECRET=uma_chave_muito_forte
-JWT_ECOM_EXPIRATION=86400000
-JWT_ECOM_COOKIE_NAME=ecommerce
+JWT_ECOM_SECRET=base64_secret_here
+JWT_ECOM_EXPIRATION=43200000
+JWT_ECOM_COOKIE_NAME=ecommerceJava
 
-# Docker Compose
-POSTGRES_DB=seu_banco
-POSTGRES_USER=seu_usuario
-POSTGRES_PASSWORD=sua_senha
-PGADMIN_DEFAULT_EMAIL=pgadmin4@pgadmin.org
-PGADMIN_DEFAULT_PASSWORD=admin
+# CORS
+FRONTEND_ECOM_URL=http://localhost:5173
+
+# Stripe
+STRIPE_SECRET_KEY=sk_test_your_key
 ```
 
----
+## Como Executar
 
-## 🐳 Executando o Projeto
-
-### 1️⃣ Subir banco com Docker
+### 1. Subir infraestrutura (PostgreSQL + pgAdmin)
 
 ```bash
 docker compose up -d
 ```
 
-Serviços disponíveis:
+Servicos:
 
-- PostgreSQL → `localhost:5434`
-- pgAdmin → `http://localhost:5050`
+- PostgreSQL: `localhost:5434`
+- pgAdmin: `http://localhost:5050`
 
----
+### 2. Executar a API
 
-### 2️⃣ Rodar a API
+Windows:
 
-**Windows**
 ```bash
 mvnw.cmd spring-boot:run
 ```
 
-**Linux/macOS**
+Linux/macOS:
+
 ```bash
 ./mvnw spring-boot:run
 ```
 
-A aplicação será iniciada em:
+API disponivel em `http://localhost:8080`.
 
-```
-http://localhost:8080
-```
+## Documentacao da API
 
----
+Com a aplicacao em execucao:
 
-## 📚 Documentação da API
+- Swagger UI: `http://localhost:8080/swagger-ui/index.html`
+- OpenAPI JSON: `http://localhost:8080/v3/api-docs`
 
-Com a aplicação em execução:
+## Seguranca e Permissoes
 
-- Swagger UI  
-  `http://localhost:8080/swagger-ui/index.html`
+Regras principais de acesso:
 
-- OpenAPI JSON  
-  `http://localhost:8080/v3/api-docs`
+- Publico: `/api/public/**`, `/api/auth/**`, `/swagger-ui/**`, `/v3/api-docs/**`, `/images/**`
+- Apenas `ADMIN`: `/api/admin/**`
+- `SELLER` ou `ADMIN`: `/api/seller/**`
+- Demais rotas: usuario autenticado
 
----
+## Usuarios Seed
 
-## 👤 Usuários Seed (Criação Automática)
+Na inicializacao, o projeto cria/atualiza usuarios para testes:
 
-Na inicialização, são criados usuários padrão para testes:
+| Perfil | Usuario | Senha |
+|---|---|---|
+| USER | `user1` | `password1` |
+| SELLER | `seller1` | `password2` |
+| ADMIN | `admin` | `adminPass` |
 
-| Perfil  | Usuário  | Senha       |
-|---------|----------|------------|
-| USER    | user1    | password1 |
-| SELLER  | seller1  | password2 |
-| ADMIN   | admin    | adminPass |
+## Endpoints Principais
 
----
+### Autenticacao
 
-## 🔎 Principais Endpoints
+- `POST /api/auth/signup`
+- `POST /api/auth/signin`
+- `POST /api/auth/signout`
+- `GET /api/auth/user`
+- `GET /api/auth/sellers`
 
-### 🔐 Autenticação — `/api/auth`
-
-- `POST /signin`
-- `POST /signup`
-- `POST /signout`
-- `GET /user`
-
----
-
-### 📂 Categorias
+### Categorias
 
 - `GET /api/public/categories`
-- `POST /api/public/categories`
-- `PUT /api/public/categories/{categoryId}`
+- `POST /api/admin/categories`
+- `PUT /api/admin/categories/{categoryId}`
 - `DELETE /api/admin/categories/{categoryId}`
 
----
+### Produtos
 
-### 📦 Produtos
-
-- `GET /api/public/product`
+- `GET /api/public/products`
 - `GET /api/public/categories/{categoryId}/products`
 - `GET /api/public/products/keyword/{keyword}`
-- `POST /api/admin/categories/{categoryId}/product`
-- `PUT /api/admin/products/{productId}`
-- `DELETE /api/admin/products/{productId}`
-- `PUT /api/products/{productId}/image`
+- `POST /api/seller/categories/{categoryId}/product`
+- `PUT /api/seller/products/{productId}`
+- `DELETE /api/seller/products/{productId}`
+- `PUT /api/seller/products/{productId}/image`
+- `GET /api/admin/products`
+- `GET /api/seller/products`
 
----
-
-### 🛒 Carrinho
+### Carrinho
 
 - `POST /api/carts/products/{productId}/quantity/{quantity}`
 - `GET /api/carts/users/cart`
@@ -211,9 +178,7 @@ Na inicialização, são criados usuários padrão para testes:
 - `PUT /api/cart/products/{productId}/quantity/{operation}`
 - `DELETE /api/cart/product/{productId}`
 
----
-
-### 📍 Endereços
+### Enderecos
 
 - `POST /api/addresses`
 - `GET /api/addresses`
@@ -222,30 +187,37 @@ Na inicialização, são criados usuários padrão para testes:
 - `PUT /api/addresses/{addressId}`
 - `DELETE /api/addresses/{addressId}`
 
----
-
-### 🧾 Pedidos
+### Pedidos e Pagamento
 
 - `POST /api/order/user/payments/{paymentMethod}`
+- `POST /api/order/stripe-client-secret`
+- `GET /api/admin/orders`
+- `GET /api/seller/orders`
+- `GET /api/user/orders`
+- `PUT /api/seller/orders/{orderId}/status`
 
----
+### Analytics
 
-## 🧪 Testes
+- `GET /api/admin/app/analytics`
+
+## Paginacao Padrao
+
+Valores padrao (`AppConstants`):
+
+- `pageNumber=0`
+- `pageSize=12`
+- `sortOrder=asc`
+
+## Testes
+
+Windows:
 
 ```bash
 mvnw.cmd test
 ```
 
----
+Linux/macOS:
 
-## 📌 Observações Técnicas
-
-- Autenticação **stateless** com JWT armazenado em cookie HTTP-only.
-- Rotas protegidas exigem autenticação, exceto:
-    - `/api/auth/**`
-    - Swagger
-    - Endpoints públicos
-- Paginação padrão:
-    - `pageNumber=0`
-    - `pageSize=50`
-- Tratamento global de exceções com `@ControllerAdvice`.
+```bash
+./mvnw test
+```
