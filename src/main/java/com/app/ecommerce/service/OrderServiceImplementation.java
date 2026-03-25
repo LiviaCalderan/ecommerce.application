@@ -148,4 +148,69 @@ public class OrderServiceImplementation implements OrderService {
         orderRepository.save(order);
         return modelMapper.map(order, OrderDTO.class);
     }
+
+    @Override
+    public OrderResponse getAllSellerOrders(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+        Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
+
+        User seller = authUtil.loggedInUser();
+
+        Page<Order> orderPage = orderRepository.findAll(pageDetails);
+        List<Order> sellerOrdersList = orderPage.getContent().stream()
+                .filter(order -> order.getOrderItems().stream()
+                        .anyMatch(orderItem -> {
+                            var product = orderItem.getProduct();
+                            if(product == null || product.getUser() == null) {
+                                return false;
+                            }
+                            return product.getUser().getUserId().equals(seller.getUserId());
+                        }))
+                .toList();
+        List<OrderDTO> orderDTOS = sellerOrdersList.stream()
+                .map( order -> modelMapper.map(order, OrderDTO.class))
+                .toList();
+
+        OrderResponse orderResponse = new OrderResponse();
+        orderResponse.setContent(orderDTOS);
+        orderResponse.setPageNumber(orderPage.getNumber());
+        orderResponse.setPageSize(orderPage.getSize());
+        orderResponse.setTotalPages(orderPage.getTotalPages());
+        orderResponse.setTotalElements(orderPage.getTotalElements());
+        orderResponse.setLastPage(orderPage.isLast());
+        return orderResponse;
+    }
+
+    @Override
+    public OrderResponse getAllUserOrders(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+        Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
+
+        User user = authUtil.loggedInUser();
+
+        Page<Order> orderPage = orderRepository.findAll(pageDetails);
+        List<Order> userOrdersList = orderPage.getContent().stream()
+                .filter(order -> order.getEmail().equals(user.getEmail()))
+                .toList();
+
+        if (userOrdersList.isEmpty()) {
+            throw new APIException("No order has been created yet");
+        }
+        List<OrderDTO> orderDTOS = userOrdersList.stream()
+                .map( order -> modelMapper.map(order, OrderDTO.class))
+                .toList();
+
+        OrderResponse orderResponse = new OrderResponse();
+        orderResponse.setContent(orderDTOS);
+        orderResponse.setPageNumber(orderPage.getNumber());
+        orderResponse.setPageSize(orderPage.getSize());
+        orderResponse.setTotalPages(orderPage.getTotalPages());
+        orderResponse.setTotalElements(orderPage.getTotalElements());
+        orderResponse.setLastPage(orderPage.isLast());
+        return orderResponse;
+    }
 }

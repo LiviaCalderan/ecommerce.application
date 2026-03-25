@@ -63,7 +63,35 @@ public class OrderController {
         return  new ResponseEntity<>(orderResponse, HttpStatus.OK);
     }
 
-    @PutMapping("/admin/orders/{orderId}/status")
+    @GetMapping("/seller/orders")
+    @Operation(
+            summary = "Get All Orders by Seller",
+            description = "Fetch orders to display on Seller Panel."
+    )
+    public ResponseEntity<OrderResponse> getAllSellerOrders(
+            @RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber,
+            @RequestParam(name = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) Integer pageSize,
+            @RequestParam(name = "sortBy", defaultValue = AppConstants.SORT_ORDERS_BY, required = false) String sortBy,
+            @RequestParam(name = "sortOrder", defaultValue = AppConstants.SORT_DIR) String sortOrder){
+        OrderResponse orderResponse = orderService.getAllSellerOrders(pageNumber, pageSize, sortBy, sortOrder);
+        return  new ResponseEntity<>(orderResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/user/orders")
+    @Operation(
+            summary = "Get All Orders by User",
+            description = "Fetch orders to display on User Profile."
+    )
+    public ResponseEntity<OrderResponse> getAllUserOrders(
+            @RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber,
+            @RequestParam(name = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) Integer pageSize,
+            @RequestParam(name = "sortBy", defaultValue = AppConstants.SORT_ORDERS_BY, required = false) String sortBy,
+            @RequestParam(name = "sortOrder", defaultValue = AppConstants.SORT_DIR) String sortOrder){
+        OrderResponse orderResponse = orderService.getAllUserOrders(pageNumber, pageSize, sortBy, sortOrder);
+        return  new ResponseEntity<>(orderResponse, HttpStatus.OK);
+    }
+
+    @PutMapping("/seller/orders/{orderId}/status")
     public ResponseEntity<OrderDTO> updateOrderStatus(@PathVariable UUID orderId,
                                                       @RequestBody OrderStatusUpdateDTO orderStatusUpdateDTO) {
 

@@ -9,7 +9,7 @@ import lombok.*;
 import java.util.*;
 
 @Entity
-@Data
+@Getter @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "users", uniqueConstraints = {

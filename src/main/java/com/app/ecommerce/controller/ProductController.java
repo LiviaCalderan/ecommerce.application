@@ -24,7 +24,7 @@ public class ProductController {
 
     private final ProductService productService;
 
-    @PostMapping("/admin/categories/{categoryId}/product")
+    @PostMapping("/seller/categories/{categoryId}/product")
     @Operation(
             summary = "Add Product To Category",
             description = "Creates a new product and links it to the informed category."
@@ -68,6 +68,21 @@ public class ProductController {
 
     }
 
+    @GetMapping("/seller/products")
+    @Operation(
+            summary = "Get Products For Seller ",
+            description = "Returns a paginated list of products for admin dashboard."
+    )
+    public ResponseEntity<ProductResponseDTO> getAllProductsForSeller(
+            @RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber,
+            @RequestParam(name = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) Integer pageSize,
+            @RequestParam(name = "sortBy", defaultValue = AppConstants.SORT_PRODUCTS_BY, required = false) String sortBy,
+            @RequestParam(name = "sortOrder", defaultValue = AppConstants.SORT_DIR, required = false) String sortOrder) {
+        ProductResponseDTO productResponse = productService.fetchAllProductsForSeller(pageNumber, pageSize, sortBy, sortOrder);
+        return new ResponseEntity<>( productResponse, HttpStatus.OK);
+
+    }
+
     @GetMapping("/public/categories/{categoryId}/products")
     @Operation(
             summary = "Get Products By Category",
@@ -97,7 +112,7 @@ public class ProductController {
         return new ResponseEntity<>(productsByKeyword, HttpStatus.FOUND);
     }
 
-    @PutMapping("/admin/products/{productId}")
+    @PutMapping("/seller/products/{productId}")
     @Operation(
             summary = "Update Product",
             description = "Updates the product data for the informed product id."
@@ -108,7 +123,7 @@ public class ProductController {
         return new ResponseEntity<>(updatedProductDTO, HttpStatus.OK);
     }
 
-    @DeleteMapping("/admin/products/{productId}")
+    @DeleteMapping("/seller/products/{productId}")
     @Operation(
             summary = "Delete Product",
             description = "Removes the product identified by the informed id."
@@ -118,7 +133,7 @@ public class ProductController {
         return new ResponseEntity<>(productDTO, HttpStatus.NO_CONTENT);
     }
 
-    @PutMapping("/admin/products/{productId}/image")
+    @PutMapping("/seller/products/{productId}/image")
     @Operation(
             summary = "Update Product Image",
             description = "Uploads and replaces the image of the informed product."

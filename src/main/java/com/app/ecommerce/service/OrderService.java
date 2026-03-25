@@ -20,4 +20,8 @@ public interface OrderService {
 
 
     OrderDTO updateOrderStatus(UUID orderId, OrderStatus orderStatus);
+
+    OrderResponse getAllSellerOrders(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder);
+
+    OrderResponse getAllUserOrders(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder);
 }

@@ -1,9 +1,7 @@
 package com.app.ecommerce.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -12,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Data
+@Setter @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "carts")

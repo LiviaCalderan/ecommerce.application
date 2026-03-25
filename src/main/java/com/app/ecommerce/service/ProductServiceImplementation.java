@@ -6,6 +6,7 @@ import com.app.ecommerce.exceptions.ResourceNotFoundException;
 import com.app.ecommerce.model.Cart;
 import com.app.ecommerce.model.Category;
 import com.app.ecommerce.model.Product;
+import com.app.ecommerce.model.User;
 import com.app.ecommerce.payload.CartDTO;
 import com.app.ecommerce.payload.ProductDTO;
 import com.app.ecommerce.payload.ProductResponseDTO;
@@ -14,6 +15,7 @@ import com.app.ecommerce.repository.CartRepository;
 import com.app.ecommerce.repository.CategoryRepository;
 import com.app.ecommerce.repository.OrderItemRepository;
 import com.app.ecommerce.repository.ProductRepository;
+import com.app.ecommerce.util.AuthUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -38,6 +40,7 @@ public class ProductServiceImplementation implements ProductService {
    private final CartRepository cartRepository;
    private final CartItemRepository cartItemRepository;
    private final OrderItemRepository orderItemRepository;
+   private final AuthUtil authUtil;
    private final ModelMapper modelMapper;
    private final FileService fileService;
    private final CartService cartService;
@@ -63,9 +66,12 @@ public class ProductServiceImplementation implements ProductService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Category", "categoryId", categoryId));
 
+        User user = authUtil.loggedInUser();
+
         Product product = modelMapper.map(productDTO, Product.class);
         product.setImage(defaultProductImage);
         product.setCategory(category);
+        product.setUser(user);
         double specialPrice = product.getPrice() - ((product.getDiscount() * 0.01) * product.getPrice());
         product.setSpecialPrice(specialPrice);
         Product savedProduct = productRepository.save(product);
@@ -184,6 +190,30 @@ public class ProductServiceImplementation implements ProductService {
 
         Page<Product> productPage = productRepository.findAll(buildPageable(pageNumber, pageSize, sortBy, sortOrder));
         return buildProductResponseDTO(productPage);
+    }
+
+    @Override
+    public ProductResponseDTO fetchAllProductsForSeller(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+        Page<Product> productPage = productRepository.findAll(buildPageable(pageNumber, pageSize, sortBy, sortOrder));
+
+        User seller = authUtil.loggedInUser();
+        List<Product> sellerProductsList = productPage.getContent().stream()
+                .filter(product -> product.getUser() != null && product.getUser().equals(seller))
+                .toList();
+
+        List<ProductDTO> productsDTO = sellerProductsList.stream()
+                .map(product ->  modelMapper.map(product, ProductDTO.class)
+                )
+                .toList();
+
+        ProductResponseDTO response = new ProductResponseDTO();
+        response.setContent(productsDTO);
+        response.setPageNumber(productPage.getNumber());
+        response.setPageSize(productPage.getSize());
+        response.setTotalElements(productPage.getTotalElements());
+        response.setTotalPages(productPage.getTotalPages());
+        response.setLastPage(productPage.isLast());
+        return response;
     }
 
     private String constructImageUrl(String imageName) {
